@@ -1,95 +1,74 @@
 import React, { useState } from 'react';
-import Signupimg from '../Assets/Signup.png';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import AuthLayout, { Field, PrimaryButton } from '../ui/AuthLayout';
+import { AUTH_API } from '../ui/api';
 
-export default function Login({ setLoggedIn }) {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-  };
-
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-  };
+  const location = useLocation();
+  const justSignedUp = location.state && location.state.signedUp;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setError('');
+    setBusy(true);
     try {
-      const response = await fetch('http://localhost:3001/auth/login', {
+      const response = await fetch(`${AUTH_API}/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'credentials':'include',
-        },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      if (response.ok) {
-        const responseData = await response.json();
-        navigate('/Home');
-        console.log(responseData);
-        localStorage.setItem('id', responseData.id.id); // Setting the id in localStorage
-    } else {
-        const data = await response.json();
-        setError(data.message); // Set error message received from the server
-      }
-    } catch (error) {
-      console.error('Login failed:', error);
-      setError('Login failed. Please try again.'); // Generic error message
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Invalid email or password');
+      localStorage.setItem('id', data.id.id);
+      localStorage.setItem('name', data.name || '');
+      localStorage.setItem('email', data.email || email);
+      navigate('/Home');
+    } catch (err) {
+      setError(err.message === 'Failed to fetch' ? 'Could not reach the server. Please try again.' : err.message);
+    } finally {
+      setBusy(false);
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <div className="flex items-center justify-center h-screen" style={{
-      backgroundImage: `url(${Signupimg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center'
-    }}>
-      <div className="flex flex-col px-16 py-12 text-base leading-4 bg-white rounded-3xl max-w-[540px] max-md:px-5">
-        <div className="self-center text-3xl font-semibold text-gray-900 whitespace-nowrap">
-          Login to your account
-        </div>
-        {error && <div className="text-red-500">{error}</div>} 
-        <div className="mt-9 capitalize">Email</div>
-        <input
-          type="email"
-          placeholder="Enter Email"
-          value={email}
-          onChange={handleEmailChange}
-          className="self-start mt-3 ml-1 text-sm flex-auto border-2 border-solid border-gray-300 text-black text-opacity-75 max-md:ml-2.5 p-2 w-full rounded-md"
-        />
-
-        <div className="mt-9 capitalize">Password</div>
-        <input
+    <AuthLayout>
+      <h1 className="text-2xl font-semibold tracking-[-0.015em] text-ink">Sign in to GenQuest</h1>
+      <p className="mt-1 text-base text-muted">Pick up where you left off with your books and saved questions.</p>
+      {justSignedUp && (
+        <div className="mt-6 rounded-md border border-line bg-sunken px-3 py-2 text-sm text-ink-2">Account created. Sign in to continue.</div>
+      )}
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <Field label="Email" type="email" name="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Field
+          label="Password"
           type={showPassword ? 'text' : 'password'}
-          placeholder="Enter Password"
+          name="password"
+          autoComplete="current-password"
           value={password}
-          onChange={handlePasswordChange}
-          className="self-start mt-3 ml-1 text-sm flex-auto border-2 border-solid border-gray-300 text-black text-opacity-75 max-md:ml-2.5 p-2 w-full rounded-md"
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          right={
+            <button type="button" onClick={() => setShowPassword((s) => !s)} className="text-xs font-normal text-muted hover:text-ink">
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          }
         />
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <button
-            className='bg-blue-500 mt-12 text-white w-36 px-4 py-2 rounded-md'
-            type="button"
-            onClick={handleSubmit}
-          >
-            Login
-          </button>
+        {error && <p className="text-sm text-danger">{error}</p>}
+        <div className="pt-2">
+          <PrimaryButton type="submit" busy={busy}>{busy ? 'Signing in…' : 'Sign in'}</PrimaryButton>
         </div>
-        <div className="flex gap-3 self-center mt-7 capitalize whitespace-nowrap">
-          <div className="grow text-gray-400">Don't have an account ?</div>{" "}
-          <div className="text-sky-500">Sign up</div>
-        </div>
-      </div>
-    </div>
+      </form>
+      <p className="mt-6 text-sm text-muted">
+        New to GenQuest?{' '}
+        <Link to="/Signup" className="font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">Create an account</Link>
+      </p>
+    </AuthLayout>
   );
 }

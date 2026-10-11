@@ -4,6 +4,8 @@ const saveQuestions  = require('../Controllers/questionController');
 const router = express.Router();
 // Route to save a question and answer
 router.post('/save', saveQuestions.saveQuestions);
+// Route to list a user's saved questions (Saved questions page)
+router.get('/questions', saveQuestions.listQuestions);
 const isLoggedIn = (req, res, next) => {
   if (req.session.isLoggedIn) {
     next(); 

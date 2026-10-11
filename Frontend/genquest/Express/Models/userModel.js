@@ -3,12 +3,15 @@ require('dotenv').config();
 
 class UserModel {
   constructor() {
-    this.pool = mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '1234',
-      database: process.env.DB_NAME || 'genquest',
-    });
+    // MySQL by default; set DB_DRIVER=sqlite to run locally without a MySQL server.
+    this.pool = process.env.DB_DRIVER === 'sqlite'
+      ? require('../Src/Config/sqlitePool')
+      : mysql.createPool({
+          host: process.env.DB_HOST || 'localhost',
+          user: process.env.DB_USER || 'root',
+          password: process.env.DB_PASSWORD || '1234',
+          database: process.env.DB_NAME || 'genquest',
+        });
   }
 
   async createUser(name, email, password) {

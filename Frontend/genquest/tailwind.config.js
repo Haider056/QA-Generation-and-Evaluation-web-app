@@ -1,14 +1,45 @@
 module.exports = {
-  purge: [
-    './src/**/*.{js,jsx,ts,tsx}',
-    './public/index.html',
-  ],
-  darkMode: false, // or 'media' or 'class'
+  content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   theme: {
-    extend: {},
-  },
-  variants: {
-    extend: {},
+    extend: {
+      colors: {
+        canvas: '#F7F6F3',
+        surface: '#FFFFFF',
+        sunken: '#F1EFEA',
+        line: '#E6E3DC',
+        'line-strong': '#D6D2C8',
+        ink: '#17171A',
+        'ink-2': '#3F3F46',
+        muted: '#6B6B73',
+        faint: '#9A9AA1',
+        accent: '#E8B931',
+        'accent-soft': '#FBEFC4',
+        'accent-ink': '#5C4500',
+        danger: '#B42318',
+      },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+      },
+      borderRadius: { sm: '6px', md: '6px', lg: '12px', xl: '12px' },
+      fontSize: {
+        '2xs': ['11px', '16px'],
+        xs: ['12px', '16px'],
+        sm: ['13px', '20px'],
+        base: ['14px', '22px'],
+        md: ['15px', '24px'],
+        lg: ['17px', '28px'],
+        xl: ['20px', '28px'],
+        '2xl': ['24px', '32px'],
+        '3xl': ['30px', '38px'],
+      },
+      maxWidth: { measure: '66ch' },
+      keyframes: {
+        shimmer: { '0%': { opacity: 0.55 }, '50%': { opacity: 1 }, '100%': { opacity: 0.55 } },
+        rise: { '0%': { opacity: 0, transform: 'translateY(6px)' }, '100%': { opacity: 1, transform: 'none' } },
+      },
+      animation: { shimmer: 'shimmer 1.4s ease-in-out infinite', rise: 'rise 260ms ease-out both' },
+    },
   },
   plugins: [],
-}
+};
